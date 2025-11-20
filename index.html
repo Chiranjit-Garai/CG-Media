@@ -1,0 +1,1684 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CG Study Center</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  
+  <style>
+    /* ========================================
+        1. Root Variables and Reset
+    ========================================
+    */
+    :root {
+      --bg:#070b1a;
+      --glass:rgba(255,255,255,.08);
+      --text:#e8f0ff;
+      --muted:#9fb0d1;
+      --grad:linear-gradient(135deg,#7c5cff 0%, #2dd4bf 60%, #ff5ea4 100%);
+      --blue-accent: #38bdf8;
+    }
+
+    /* Reset */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter', 'Noto Sans Bengali', 'Poppins', system-ui;}
+    body{background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+    /* ========================================
+        2. Main Layout (Header, Main, Footer)
+    ========================================
+    */
+    /* ===== Header/Appbar ===== */
+    header.appbar {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:40px 30px 10px 18px;
+      background:rgba(8,14,32,.8); backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--glass);
+      transition: padding .3s;
+    }
+    body.player-view-active header.appbar {
+      padding-top: 10px;
+    }
+
+    .left,.right{display:flex;align-items:center;gap:10px;}
+    .brand{font-size:20px;font-weight:800;background:var(--grad);-webkit-background-clip:text;color:transparent;}
+    .subtitle{font-size:12px;color:var(--muted);}
+    .icon-btn{width:38px;height:38px;border-radius:12px;border:0;cursor:pointer;background:var(--glass);color:#fff;font-size:18px;display:grid;place-items:center;}
+    .icon-btn:hover{background:rgba(255,255,255,.2);}
+
+    .appbar-in-player-view #menuBtn { display: none; }
+    .appbar-in-player-view #backBtn { display: grid; }
+    #backBtn { display: none; }
+
+
+    /* ===== Main Section ===== */
+    main{padding:100px 16px 100px;}
+    section.view{display:none;}
+    section.view.active{display:block;}
+
+    /* === Sticky Player CSS === */
+    body.player-view-active main {
+      padding: 0;
+      padding-top: 70px;
+    }
+    #lecturePlayerView {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    #player-area {
+      position: sticky;
+      top: 70px; 
+      z-index: 1001; 
+      background: var(--bg); 
+    }
+
+    /* ===== Bottom Navbar Styles ===== */
+    .bottom-navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-around;
+      align-items: stretch;
+      background: rgba(8, 14, 32, 0.8);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--glass);
+      padding: 8px 0;
+      transition: transform .3s ease;
+    }
+    body.player-view-active .bottom-navbar {
+      transform: translateY(100%);
+    }
+    .bottom-navbar a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 0;
+      transition: .2s;
+    }
+    .bottom-navbar .icon { font-size: 20px; margin-bottom: 2px; }
+    .bottom-navbar .label { font-size: 11px; font-weight: 500; }
+    .bottom-navbar a:hover { color: var(--text); }
+    .bottom-navbar a.active {
+      color: var(--text);
+      font-weight: 600;
+      background: var(--glass);
+      border-radius: 12px;
+      transform: scale(0.95);
+    }
+    .bottom-navbar a.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      color: var(--muted);
+      background: none;
+      transform: none;
+      font-weight: 500;
+    }
+
+    /* ========================================
+        3. Side Menu
+    ========================================
+    */
+    #menuOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:.25s;z-index:1900;}
+    #menuOverlay.show{opacity:1;visibility:visible;}
+    #sideMenu{
+      position:fixed;top:0;left:-250px;height:100%;width:240px;z-index:2001;
+      background:#0d1733;border-right:1px solid var(--glass);
+      padding:80px 12px;display:flex;flex-direction:column;gap:10px;transition:.3s;
+    }
+    #sideMenu.open{left:0;}
+    #sideMenu a{padding:10px 12px;border-radius:10px;color:var(--text);text-decoration:none;background:rgba(255,255,255,.05);}
+    #sideMenu a:hover{background:rgba(255,255,255,.15);}
+
+    /* ========================================
+        4. Cards and Grids
+    ========================================
+    */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: 1fr; 
+      gap: 14px; 
+    }
+
+    .card{
+      border-radius:16px;overflow:hidden;
+      background:rgba(255,255,255,.05);border:1px solid var(--glass);
+      cursor:pointer;text-decoration:none;color:inherit;
+      transition:.3s;opacity:0;transform:translateY(12px);
+      animation:fadeUp .5s ease forwards;
+    }
+    .card:hover{transform:translateY(-4px);background:rgba(255,255,255,.1);}
+    .thumb{height:160px;background:#12214a;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;}
+    .card-body{padding:12px;}
+    .card-body .title{font-weight:700;font-size:16px;}
+    .card-body .hint{font-size:13px;color:var(--muted);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+    .card.subject-card {
+      --accent:#7c5cff;
+      position:relative;
+      padding:18px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+      font-size:16px;
+      font-weight:500;
+      transition:transform .25s, box-shadow .25s;
+      box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    }
+    .card.subject-card small {
+      font-size:14px; color:#9ca3af; display:block; margin-top:4px;
+    }
+    .card.subject-card::before {
+      content:"";
+      position:absolute; inset:0 auto 0 0;
+      width:6px;
+      background:linear-gradient(180deg,var(--accent),transparent 80%);
+      border-radius:14px 0 0 14px;
+    }
+    .card.subject-card:hover {
+      transform:translateY(-4px);
+      box-shadow:0 10px 24px rgba(0,0,0,0.4);
+      background:rgba(124,92,255,0.15);
+    }
+
+    /* ========================================
+        5. Components (Tabs)
+    ========================================
+    */
+    .tabs { display:flex; justify-content:center; margin:15px 0; gap:10px; }
+    .tab { background:#1e1e2f; color:#ccc; padding:8px 16px; border-radius:20px; border:none; cursor:pointer; font-weight:bold; transition:all 0.3s ease; }
+    .tab.active { background:linear-gradient(135deg,#6a5acd,#00bfff); color:white; }
+
+    /* ========================================
+        6. Video Player Styles
+    ========================================
+    */
+    #lecture-details-area { padding: 16px; border-bottom: 1px solid var(--glass); }
+    #lecture-details-area h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+    #lecture-details-area p { font-size: 0.875rem; color: var(--muted); margin-top: 4px; }
+
+    .player-action-buttons { display: flex; justify-content: space-around; align-items: center; padding: 16px; border-bottom: 1px solid var(--glass); }
+    .action-btn { background: none; border: none; color: var(--muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; font-family: 'Inter', 'Noto Sans Bengali', system-ui; }
+    .action-btn span { font-size: 20px; height: 24px; display: grid; place-items: center; }
+    .action-btn:hover { color: var(--text); }
+    .action-btn label { font-size: 12px; }
+
+    #up-next-list-area { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    #up-next-list-area h3 { font-size: 1rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    #up-next-list-area .card.subject-card { animation: none; opacity: 1; transform: none; margin-bottom: 0; }
+    .card.subject-card.now-playing-card { border: 1px solid var(--blue-accent); background: rgba(56, 189, 248, 0.15); }
+
+    #video-container { border-radius: 0; max-height: none; }
+    #custom-video-player::-webkit-media-controls { display: none !important; }
+    #custom-video-player::-moz-media-controls { display: none !important; }
+    #custom-video-player { width: 100%; height: auto; aspect-ratio: 16/9; }
+
+    #video-controls-bottom, #video-controls-top { opacity: 1; transition: opacity 0.3s ease-out; z-index: 30; pointer-events: auto; }
+    #video-container.controls-hidden #video-controls-bottom,
+    #video-container.controls-hidden #video-controls-top { opacity: 0 !important; pointer-events: none !important; }
+    #video-container.settings-panel-open #video-controls-bottom,
+    #video-container.settings-panel-open #video-controls-top { opacity: 0 !important; pointer-events: none !important; }
+
+    #seek-bar { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; outline: none; cursor: pointer; transition: height 0.2s ease; background: linear-gradient(to right, #ef4444 var(--seek-progress, 0%), #9ca3af var(--seek-progress, 0%), #9ca3af var(--buffer-progress, 0%), rgba(255, 255, 255, 0.3) var(--buffer-progress, 0%) ); }
+    #seek-bar:hover { height: 8px; }
+    #seek-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: #ffffff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.3); margin-top: -5px; }
+    #seek-bar:hover::-webkit-slider-thumb { margin-top: -4px; }
+    #seek-bar::-moz-range-thumb { width: 16px; height: 16px; background: #ffffff; border-radius: 50%; cursor: pointer; border: none; }
+
+    #volume-slider { -webkit-appearance: none; appearance: none; width: 70px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; outline: none; transition: opacity 0.3s ease; }
+    #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; background: #ffffff; border-radius: 50%; cursor: pointer; }
+    #volume-slider::-moz-range-thumb { width: 12px; height: 12px; background: #ffffff; border-radius: 50%; cursor: pointer; border: none; }
+
+    #settings-panel { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 40; transform: translateY(100%); transition: transform 0.3s ease-out; max-height: 70%; overflow-y: auto; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    #settings-panel.active { transform: translateY(0); }
+
+    #custom-alert { z-index: 4000 !important; }
+
+    /* ========================================
+        7. SHARED MODE STYLES (For Share Links)
+    ========================================
+    */
+    /* এই ক্লাসটি থাকলে সবকিছু লুকিয়ে যাবে */
+    body.shared-mode header.appbar,
+    body.shared-mode .bottom-navbar,
+    body.shared-mode #sideMenu,
+    body.shared-mode #menuBtn,
+    body.shared-mode #backBtn,
+    body.shared-mode .subtitle,
+    body.shared-mode .brand,
+    body.shared-mode .player-action-buttons {
+        display: none !important;
+    }
+
+    body.shared-mode main {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        background: #000; /* Black background for cinematic feel */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    body.shared-mode #player-area {
+        position: relative;
+        top: 0 !important;
+        width: 100%;
+    }
+    
+    body.shared-mode #lecture-details-area {
+        border-bottom: none;
+        text-align: center;
+        color: #aaa;
+    }
+    
+    /* শেয়ারড মোডে "আপ নেক্সট" লুকিয়ে রাখি */
+    body.shared-mode #up-next-list-area {
+        display: none;
+    }
+
+  </style>
+</head>
+
+<body>
+  <header class="appbar" id="appbar">
+    <div class="left">
+      <button class="icon-btn" id="backBtn" style="display: none;">←</button>
+      <button class="icon-btn" id="menuBtn">☰</button>
+      <div>
+        <div class="brand" id="brandTitle">CG Study Center</div>
+        <div class="subtitle" id="brandSub">All-in-one single file</div>
+      </div>
+    </div>
+    <div class="right">
+      <button class="icon-btn" onclick="location.hash='#notifications'">🔔</button>
+      <button class="icon-btn" onclick="location.hash='#settings'">⚙️</button>
+        <a href="mailto:chiranjit9732140742@gmail.com?subject=Study%20Help&body=হ্যালো,%20আমি%20একটা%20বার্তা%20পাঠাচ্ছি।" class="icon-btn" style="text-decoration:none; display:grid; place-items:center;">
+      ✉️
+    </a>
+    <button class="icon-btn" onclick="location.hash='#settings'">⋮</button>
+    </div>
+  </header>
+
+  <div id="menuOverlay"></div>
+
+  <aside id="sideMenu">
+    <a href="#loginBox" id="loginMenuItem">👤 Login</a>
+    <a href="#home">🏠 Home</a>
+    <a href="#community">👥 Community</a>
+    <a href="#chat">💬 Chat</a>
+    <a href="#notifications">🔔 Notifications</a>
+    <a href="#classPage">🎓 Class</a>
+    <a href="#settings">⚙️ Settings</a>
+    <a href="#info">ℹ️ Info</a>
+    <a href="#profile">👤 Profile</a>
+  </aside>
+
+  <main>
+    <section class="view" id="home"></section>
+    
+    <section class="view" id="community">
+        <h2 style="text-align: center; margin-top: 20px;">Community Page</h2>
+        <p style="text-align: center; color: var(--muted);">Content will be added here.</p>
+    </section>
+
+    <section class="view" id="profile">
+        <h2 style="text-align: center; margin-top: 20px;">User Profile</h2>
+        <p style="text-align: center; color: var(--muted);">Content will be added here.</p>
+    </section>
+    
+    <section class="view" id="classPage">
+      <div class="grid">
+        <a href="#Semesters3/4" class="card">
+            <div class="thumb" style="background: rosybrown;">Class 12</div>
+            <div class="card-body">
+                <div class="title">Class 12</div>
+                <div class="hint">Tap to continue</div>
+            </div>
+        </a>
+      </div>
+    </section>
+  
+  <section class="view" id="Semesters3/4">
+    <div class="grid">
+      <a href="#sem4" class="card" style="grid-column:1 / -1">
+        <div class="thumb" style="height:200px;display:flex;align-items:center;justify-content:center;background:#1b2b66">
+          <div style="font-size:32px;font-weight:700;color:#fff">Sem-4</div>
+        </div>
+        <div class="card-body">
+          <div class="title">Semester 4</div>
+          <div class="hint">Tap to view subjects</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="view" id="sem4">
+    <div class="tabs">
+      <button class="tab active" onclick="showSubjects('science', this)">Science</button>
+    </div>
+
+    <div class="subjects-grid" id="science-subjects">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a href="#Physicssem4" style="flex:1; text-decoration:none; color:inherit;">
+          <div class="card subject-card">Physics <br><small>Unlock to view chapters</small></div>
+        </a>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a href="#Chemistrysem4" style="flex:1; text-decoration:none; color:inherit;">
+          <div class="card subject-card">Chemistry <br><small>Unlock to view chapters</small></div>
+        </a>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a href="#Mathsem4" style="flex:1; text-decoration:none; color:inherit;">
+          <div class="card subject-card">Mathematics <br><small>Unlock to view chapters</small></div>
+        </a>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a href="#Biologysem4" style="flex:1; text-decoration:none; color:inherit;">
+          <div class="card subject-card">Biology <br><small>Unlock to view chapters</small></div>
+        </a>
+      </div>
+    </div>
+    <div class="subjects-grid" id="arts-subjects" style="display:none;"></div>
+    <div class="subjects-grid" id="commerce-subjects" style="display:none;"></div>
+  </section>
+
+  <section class="view" id="Bengalisem4">
+    <div class="subjects-grid">
+      <div class="card subject-card" style="opacity: 0.6; cursor: not-allowed;">Chapter 1<br><small>Coming soon</small></div>
+    </div>
+  </section>
+       
+       <section class="view" id="Physicssem4">
+        <div class="subjects-grid">
+          <a href="#PhysicsCp1sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">01 Introductions<br><small>Tap to view lectures</small></div></a>
+          <a href="#PhysicsCp2sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">02 Geometrical optics<br><small>Tap to view lectures</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">03 Wave optics<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">04 Modern physics<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">05 Semiconductor and digital electronics<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">06 Telecommunications<br><small>Coming soon</small></div></a>
+        </div>
+      </section>
+      
+      <section class="view" id="Chemistrysem4">
+        <div class="subjects-grid">
+          <a href="#ChemistryCp1sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">01 Introductions<br><small>Tap to view lectures</small></div></a>
+          <a href="#ChemistryCp2sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">02 Aldehydes, Ketones<br><small>Tap to view lectures</small></div></a>
+          <a href="#ChemistryCp3sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">03 Carboxylic Acids<br><small>Tap to view lectures</small></div></a>
+          <a href="#ChemistryCp4sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">04 Organic compounds containing Nitrogen<br><small>Tap to view lectures</small></div></a>
+            <a href="#ChemistryCp5sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">05 Electrochemistry <br><small>Tap to view lectures</small></div></a>
+       
+        <a href="#ChemistryCp6sem4" class="unit-link" style="text-decoration:none; color:inherit; "><div class="card subject-card">06 Chemical Kinetics<br><small>Tap to view lectures</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">07 Coordination compounds<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">08 d Block elements<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">09 f Block elements<br><small>Coming soon</small></div></a>
+        </div>
+      </section>
+      
+      <section class="view" id="Mathsem4">
+        <div class="subjects-grid">
+          <a href="#MathCp1sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">01 Introductions<br><small>Tap to view lectures</small></div></a>
+          <a href="#MathCp2sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">02 ভেক্টর বীজগণিত<br><small>Tap to view lectures</small></div></a>
+          <a href="#MathCp3sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">03 দুটি ভেক্টরের গুণ<br><small>Tap to view lectures</small></div></a>
+          <a href="#MathCp4sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">04 দিক্ কোসাইন এবং দিক্ অনুপাত<br><small>Tap to view lectures</small></div></a>
+          <a href="#MathCp5sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">05 ত্রিমাত্রিক দেশে সরলরেখা<br><small>Tap to view lectures</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">06 অনির্দিষ্ট সমাকল<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">07 পরিবর্ত বা প্রতিস্থাপন পদ্ধতিতে সমাকলন<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">08 আংশিক সমাকলন<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">09 কয়েকটি বিশেষ আকারের অপেক্ষকের সমাকল<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">10 নির্দিষ্ট সমাকল<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">11 ক্ষেত্রফলরূপে নির্দিষ্ট সমাকল<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">12 অবকল সমীকরণ<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">13 রৈখিক প্রোগ্রামবিধি<br><small>Coming soon</small></div></a>
+        </div>
+      </section>
+      
+      <section class="view" id="Biologysem4">
+        <div class="subjects-grid">
+          <a href="#BiologyCp1sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">01 Introductions<br><small>Tap to view lectures</small></div></a>
+          <a href="#BiologyCp2sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">02 স্বাস্থ্য ও রোগ<br><small>Tap to view lectures</small></div></a>
+          <a href="#BiologyCp3sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">03 খাদ্য উৎপাদনের উন্নতি সাধন<br><small>Tap to view lectures</small></div></a>
+          <a href="#BiologyCp4sem4" class="unit-link" style="text-decoration:none; color:inherit;"><div class="card subject-card">04 মানব কল্যাণে অনুজীব<br><small>Tap to view lectures</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">05 জৈব প্রযুক্তিবিদ্যা ও তার প্রয়োগ<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">06 বাস্তব বিদ্যা পরিবেশ ও জনসংখ্যা<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">07 বাস্তুতন্ত্র<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">08 জীববৈচিত্র্য ও তার সংরক্ষণ<br><small>Coming soon</small></div></a>
+          <a href="#" class="unit-link" style="text-decoration:none; color:inherit; opacity: 0.6; cursor: not-allowed;"><div class="card subject-card">09 পরিবেশগত বিষয়<br><small>Coming soon</small></div></a>
+        </div>
+      </section>
+
+      <section class="view" id="PhysicsCp1sem4">
+        <div class="subjects-grid">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('e69c560b-a3d0-440c-b066-f026baf2bc5f/720p/video.m3u8', 'Physics: 01 Introductions - Lecture 01', 'PhysicsCp1sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+            </a>
+            <a href="e69c560b-a3d0-440c-b066-f026baf2bc5f/720p/video.m3u8" download="Physics-L1-Intro.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn" title="View PDF">📄</a>
+          </div>
+        </div>
+      </section>
+      
+      <section class="view" id="PhysicsCp2sem4">
+        <div class="subjects-grid">
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/f3c7b3e7-0233-41e4-8927-0df370385d2a/play_720p.mp4', 'Physics: Geometrical optics - Lecture-01', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-01<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/f3c7b3e7-0233-41e4-8927-0df370385d2a/play_720p.mp4" download="Physics-L01.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_1_Introducti on_to_reflection_and_image_formation_by_plane_mirror.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/52cac711-6025-4c7d-96ab-ce524aa5504e/play_720p.mp4', 'Physics: Geometrical optics - Lecture-02', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-02<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/52cac711-6025-4c7d-96ab-ce524aa5504e/play_720p.mp4" download="Physics-L02.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_2_Field_of_ view_and_rotation_of_plane_mirror.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/64299ebd-bfe7-4c2a-9e95-4318d0b53a3f/play_720p.mp4', 'Physics: Geometrical optics - Lecture-03', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-03<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/64299ebd-bfe7-4c2a-9e95-4318d0b53a3f/play_720p.mp4" download="Physics-L03.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_3_Image_fo rmation_by_two_inclined_plane_mirrors.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/51b5df20-8af6-4669-b1bcff06c588cf19-/play_720p.mp4', 'Physics: Geometrical optics - Lecture -04', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture -04<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/51b5df20-8af6-4669-b1bcff06c588cf19-/play_720p.mp4" download="Physics-L04.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_4_Reflectio n_on_spherical_mirror_and_Mirrors_formula.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/5412c99d-09bc-400a-b728-9969833cea6a/play_720p.mp4', 'Physics: Geometrical optics - Lecture -05', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture -05<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/5412c99d-09bc-400a-b728-9969833cea6a/play_720p.mp4" download="Physics-L05.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_5_Image_fo rmation_by_concave_mirror.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/9170bc0f-0afb-4bdd-803a-f8a9ca77c6c2/play_720p.mp4', 'Physics: Geometrical optics - Lecture-06', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-06<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/9170bc0f-0afb-4bdd-803a-f8a9ca77c6c2/play_720p.mp4" download="Physics-L06.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_6_Image_fo rmation_by_convex_mirror_and_Magnification.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px; opacity: 0.6; cursor: not-allowed;">
+            <a href="#" onclick="return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-07<br><small>Video not available</small></div>
+            </a>
+            <a href="#" onclick="return false;" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="#" onclick="return false;" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/6fe843f9-ed53-4041-a9d0-f3c00d9829c7/play_720p.mp4', 'Physics: Geometrical optics - Lecture-08', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-08<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/6fe843f9-ed53-4041-a9d0-f3c00d9829c7/play_720p.mp4" download="Physics-L08.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_8_Refractiv e_index_and_laws_of_refraction.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/3c1cfd28-6b0a-43b4-b35c-0a4d2b310197/play_720p.mp4', 'Physics: Geometrical optics - Lecture-09', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-09<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/3c1cfd28-6b0a-43b4-b35c-0a4d2b310197/play_720p.mp4" download="Physics-L09.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_9_Refractio n_of_rectangular_slab_Part_1_xfeeeCr.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/d2540abc-d56c-4e54-9f76-7d07029984c7/play_720p.mp4', 'Physics: Geometrical optics - Lecture-10', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-10<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/d2540abc-d56c-4e54-9f76-7d07029984c7/play_720p.mp4" download="Physics-L10.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_10_Refracti on_of_rectangular_slab_Part_2_N9BsyGz.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/55b07f3c-3f35-44a8-946b-be47f1c4181d/play_720p.mp4', 'Physics: Geometrical optics - Lecture-11', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-11<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/55b07f3c-3f35-44a8-946b-be47f1c4181d/play_720p.mp4" download="Physics-L11.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_11_Total_int emal_reflection_qQiGelb.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/395b37e4-d639-4869-b02d-9b8a09872886/play_720p.mp4', 'Physics: Geometrical optics - Lecture-12', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-12<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/395b37e4-d639-4869-b02d-9b8a09872886/play_720p.mp4" download="Physics-L12.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_12_Optical_ fibre_and_Prism.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/ccc17f71-85a9-4636-9463-9ca2ff8ca731/play_720p.mp4', 'Physics: Geometrical optics - Lecture-13', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-13<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/ccc17f71-85a9-4636-9463-9ca2ff8ca731/play_720p.mp4" download="Physics-L13.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_13_Prism_ Part_2.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/ee5167cb-0913-4611-9a1c-a6a868bb6cff/play_720p.mp4', 'Physics: Geometrical optics - Lecture-14', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-14<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/ee5167cb-0913-4611-9a1c-a6a868bb6cff/play_720p.mp4" download="Physics-L14.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_14_Dispersi on_of_light.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/9aa6c3b2-0439-4057-2002-095b074802a2/play_720p.mp4', 'Physics: Geometrical optics - Assignment-01', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Assignment-01<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/9aa6c3b2-0439-4057-2002-095b074802a2/play_720p.mp4" download="Physics-Asgn01.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/G.O._DPP_1.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/f3bf70fb-add6-4254-9da9-2d6a50d83bcb/play_720p.mp4', 'Physics: Geometrical optics - Lecture-15', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-15<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/f3bf70fb-add6-4254-9da9-2d6a50d83bcb/play_720p.mp4" download="Physics-L15.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_15_Refracti on_at_spherical_surface.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/91046bce-2e5f-4418-9df1-b320e6ad410c/play_720p.mp4', 'Physics: Geometrical optics - Lecture-16', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-16<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/91046bce-2e5f-4418-9df1-b320e6ad410c/play_720p.mp4" download="Physics-L16.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_16_Introduc tion_to_lens_and_Image_formation_by_lens.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/b3f9d9ea-762f-465e-beb5-d97471010249/play_720p.mp4', 'Physics: Geometrical optics - Lecture-17', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-17<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/b3f9d9ea-762f-465e-beb5-d97471010249/play_720p.mp4" download="Physics-L17.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_17_Lens_p Success art_2.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/a51d1c49-d701-4bed-b454-0add459c4a90/play_720p.mp4', 'Physics: Geometrical optics - Lecture-18', 'PhysicsCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture-18<br><small>Tap to play video</small></div>
+            </a>
+            <a href="https://vz-538c3d8b-8e7.b-cdn.net/a51d1c49-d701-4bed-b454-0add459c4a90/play_720p.mp4" download="Physics-L18.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Lec_18_Lens_P art_3.pdf" target="_blank" class="icon-btn" title="View PDF">📄</a>
+          </div>
+
+        </div>
+      </section>
+      <section class="view" id="ChemistryCp1sem4">
+        <div class="subjects-grid">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="#" onclick="openLecturePlayer('017a6524-5bbf-4a7b-9de2-cf658b3433dc/720p/video.m3u8', 'Chemistry: 01 Introductions - Lecture 01', 'ChemistryCp1sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+              <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+            </a>
+            <a href="017a6524-5bbf-4a7b-9de2-cf658b3433dc/720p/video.m3u8" download="Chem-L1-Intro.mp4" class="icon-btn" title="Download Video">⬇️</a>
+            <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn" title="View PDF">📄</a>
+          </div>
+        </div>
+      </section>
+      
+      <section class="view" id="ChemistryCp2sem4">
+        <div class="subjects-grid">
+      <div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/dbcb2489-1ed8-4508-9367-473d0bdc59b5/play_720p.mp4', 'Lecture 01', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/dbcb2489-1ed8-4508-9367-473d0bdc59b5/play_720p.mp4" download="Chem-L1.mp4" class="icon-btn" title="Download Video">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L1_main_BM_PvGOwaT.pdf" class="icon-btn" title="View PDF">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/df78a37a-0c85-4faa-a819-09a6611f4e7d/play_720p.mp4', 'Lecture 02', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/df78a37a-0c85-4faa-a819-09a6611f4e7d/play_720p.mp4" download="Chem-L2.mp4" class="icon-btn" title="Download Video">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L2_main_BM_eHAPSE6.pdf" class="icon-btn" title="View PDF">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4', 'Assignment - 01', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment - 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4" download="Assignment-01.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Aldehyde_ketone_Assignment_1_BM.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/2f8bd8c2-e6fe-4cc9-91b0-42af92d10cd9/play_720p.mp4', 'Lecture 03', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 03<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/2f8bd8c2-e6fe-4cc9-91b0-42af92d10cd9/play_720p.mp4" download="Chem-L3.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L3_worked_BM_3_gxByfFa.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/38e2a5ef-a2e5-469c-b58a-83031e81402b/play_720p.mp4', 'Lecture 04', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 04<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/38e2a5ef-a2e5-469c-b58a-83031e81402b/play_720p.mp4" download="Chem-L4.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L4_main_BM_2vElWaw_OwWflLL.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4', 'Assignment - 02', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment - 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4" download="Assignment-02.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Ass-2.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/ccb99bab-491e-43f8-9103-ffc7edc78b44/play_720p.mp4', 'Lecture 05', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 05<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/ccb99bab-491e-43f8-9103-ffc7edc78b44/play_720p.mp4" download="Chem-L5.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L5_worked_y6QyMdr.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/b3469370-97f6-4537-895b-3a8bf18d0a07/play_720p.mp4', 'Lecture 06', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 06<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/b3469370-97f6-4537-895b-3a8bf18d0a07/play_720p.mp4" download="Chem-L6.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L6_worked_hCFvD9h.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/2d11ef2e-e35a-4769-8e66-c04ef29750d3/play_720p.mp4', 'Assignment Solution - 01', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment Solution - 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/2d11ef2e-e35a-4769-8e66-c04ef29750d3/play_720p.mp4" download="Ass-Sol-01.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/5fad2e8f-f164-4ed3-b620-65be3be3fc36/play_720p.mp4', 'Assignment Solution - 02', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment Solution - 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/5fad2e8f-f164-4ed3-b620-65be3be3fc36/play_720p.mp4" download="Ass-Sol-02.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/f8f8f870-2743-42a7-b58b-e26d36a25215/play_720p.mp4', 'Assignment Solution - 03', 'ChemistryCp2sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment Solution - 03<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/f8f8f870-2743-42a7-b58b-e26d36a25215/play_720p.mp4" download="Ass-Sol-03.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+          </div>
+      </section>
+      
+      <section class="view" id="ChemistryCp3sem4">
+      <div class="subjects-grid">
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/87a26e5c-60fc-47da-b15b-30777893b0ff/play_720p.mp4', 'Lecture 01', 'ChemistryCp3sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/87a26e5c-60fc-47da-b15b-30777893b0ff/play_720p.mp4" download="Chem-L1.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L1_worked_BM_ZXFAQdj_6bzXrz3.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/74d263fe-03c5-4b38-b52a-24a32a495112/play_720p.mp4', 'Lecture 02', 'ChemistryCp3sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/74d263fe-03c5-4b38-b52a-24a32a495112/play_720p.mp4" download="Chem-L2.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L2_worked_d7WzVWf.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4', 'Assignment - 01', 'ChemistryCp3sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment - 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4" download="Assignment-01.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Carbocilic_acid_Assingment_BM_F0iS68o.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/a26ca05d-bfeb-411f-9bf2-6d4136f5fb89/play_720p.mp4', 'Assignment Solution - 01', 'ChemistryCp3sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment Solution - 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/a26ca05d-bfeb-411f-9bf2-6d4136f5fb89/play_720p.mp4" download="Ass-Sol-01.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/4e258e8d-fec6-4ceb-95f2-fa155af3c2bf/play_720p.mp4', 'Exam Question', 'ChemistryCp3sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Exam Question<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/4e258e8d-fec6-4ceb-95f2-fa155af3c2bf/play_720p.mp4" download="Exam-Question.mp4" class="icon-btn">⬇️</a>
+    <a href="https://d2twr2hh1w2mkv.cloudfront.net/media/pdfs/Aldehyde-Ketone_BM.pdf" class="icon-btn">📄</a>
+</div>
+
+      </div>
+        </section>
+      
+      <section class="view" id="ChemistryCp4sem4">
+         <div class="subjects-grid">
+         <div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/4a67d26b-f3d9-43ea-8a10-3cdef00dbc5d/play_720p.mp4', 'Lecture 01', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/4a67d26b-f3d9-43ea-8a10-3cdef00dbc5d/play_720p.mp4" download="Chem-L1.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L1_main_BM_nlIbWV9_keuhk9R.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0fa7ade9-9109-4e89-9d9f-858e132e9add/play_720p.mp4', 'Lecture 02', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0fa7ade9-9109-4e89-9d9f-858e132e9add/play_720p.mp4" download="Chem-L2.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L2_worked_q5JyLkV.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/8551a079-a6e2-468d-9f72-fc70970405ba/play_720p.mp4', 'Lecture 03', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1; text-decoration:none; color:inherit;">
+        <div class="card subject-card">Lecture 03<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/8551a079-a6e2-468d-9f72-fc70970405ba/play_720p.mp4" download="Chem-L3.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L3_worked_XIFir7W.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4', 'Assignment 01', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4" download="Assignment-01.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Nitrogen_Ass_1_BM.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4', 'Assignment 02', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/0b4e9527-0252-4e11-ae01-c54501e30863/play_720p.mp4" download="Assignment-02.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/Nitrogen_Ass_2_BM.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/bbd882a3-a95b-482f-8c3a-55ab99a51ef4/play_720p.mp4', 'Assignment 01 Solution', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment 01 Solution<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/bbd882a3-a95b-482f-8c3a-55ab99a51ef4/play_720p.mp4" download="Ass-Sol-01.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/6027c105-be1e-4baf-ba3e-30fe4e306dd8/play_720p.mp4', 'Assignment 02 Solution', 'ChemistryCp4sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Assignment 02 Solution<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/6027c105-be1e-4baf-ba3e-30fe4e306dd8/play_720p.mp4" download="Ass-Sol-02.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+         </div>
+        </section>
+        
+        
+<section class="view" id="ChemistryCp5sem4">
+         <div class="subjects-grid">
+         <div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/8975e6f4-b3b6-4116-ba04-496f351f8df8/play_720p.mp4', 'Lecture 01', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/8975e6f4-b3b6-4116-ba04-496f351f8df8/play_720p.mp4" download="Chem-L1.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L1_worked_BM_1_eNEUsNn_7jdBt4w.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/52f38d3b-90c6-497d-be22-05baaff5ea03/play_720p.mp4', 'Lecture 02', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/52f38d3b-90c6-497d-be22-05baaff5ea03/play_720p.mp4" download="Chem-L2.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L2_worked_BM_2_bGcd6sI.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/8684266f-b1e0-41a8-95f3-a5b4d72ac663/play_720p.mp4', 'Lecture 05', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 05<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/8684266f-b1e0-41a8-95f3-a5b4d72ac663/play_720p.mp4" download="Chem-L5.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L5_Specific_conductance-BM_5I9OxE5.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/51845544-46e2-4ecc-9c59-f25bc8fc6d61/play_720p.mp4', 'Lecture 06', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 06<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/51845544-46e2-4ecc-9c59-f25bc8fc6d61/play_720p.mp4" download="Chem-L6.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L6_MolarEquiv_condtnKohlrausch_worked_BM_e3oUFpM.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/9962fd23-098f-4e33-bf0c-a26fb0729b8e/play_720p.mp4', 'Lecture 07', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 07<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/9962fd23-098f-4e33-bf0c-a26fb0729b8e/play_720p.mp4" download="Chem-L7.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L7_Farady_law_BM_Yi1EaKE.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/bc424c5e-9bb5-4e72-a401-3853dd24125e/play_720p.mp4', 'Numerical Set 01', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Numerical Set 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/bc424c5e-9bb5-4e72-a401-3853dd24125e/play_720p.mp4" download="Numerical-Set-01.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/set-1_worked_BM_FS36YpK.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/9806af02-bb24-41ce-8ac6-bf7dbb8de8fd/play_720p.mp4', 'Numerical Set 02', 'ChemistryCp5sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Numerical Set 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/9806af02-bb24-41ce-8ac6-bf7dbb8de8fd/play_720p.mp4" download="Numerical-Set-02.mp4" class="icon-btn">⬇️</a>
+    <a href="#" onclick="alert('PDF not available'); return false;" class="icon-btn">📄</a>
+</div>
+         </div>
+        </section>
+        
+        <section class="view" id="ChemistryCp6sem4">
+         <div class="subjects-grid">
+         <div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/7eda9bea-da58-49e8-8d6a-47b7fe6eb732/play_720p.mp4', 'Lecture 01', 'ChemistryCp6sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 01<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/7eda9bea-da58-49e8-8d6a-47b7fe6eb732/play_720p.mp4" download="Chem-L1.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L1_Reaction_Rate_worked_BM_w3pg7O0.pdf" class="icon-btn">📄</a>
+</div>
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <a href="#" onclick="openLecturePlayer('https://vz-538c3d8b-8e7.b-cdn.net/07daf3a9-03b2-43e1-aaa3-c74ff5912354/play_720p.mp4', 'Lecture 02', 'ChemistryCp6sem4'); return false;" class="unit-link" style="flex:1;">
+        <div class="card subject-card">Lecture 02<br><small>Tap to play video</small></div>
+    </a>
+    <a href="https://vz-538c3d8b-8e7.b-cdn.net/07daf3a9-03b2-43e1-aaa3-c74ff5912354/play_720p.mp4" download="Chem-L2.mp4" class="icon-btn">⬇️</a>
+    <a href="https://api.bongmistry.com/proxy-pdf/?url=pdfs/L2_Mass_action_rate_const-BM_l3Cirib.pdf" class="icon-btn">📄</a>
+</div>
+             </div>
+        </section>
+        
+      <section class="view" id="MathCp1sem4">
+        </section>
+      <section class="view" id="MathCp2sem4">
+        </section>
+      <section class="view" id="MathCp3sem4">
+        </section>
+      <section class="view" id="MathCp4sem4">
+        </section>
+      <section class="view" id="MathCp5sem4">
+        </section>
+
+      <section class="view" id="BiologyCp1sem4">
+        </section>
+      <section class="view" id="BiologyCp2sem4">
+        </section>
+      <section class="view" id="BiologyCp3sem4">
+        </section>
+      <section class="view" id="BiologyCp4sem4">
+        </section>
+
+      <section class="view" id="lecturePlayerView">
+        
+        <div id="player-area">
+          <div id="video-container" class="relative w-full bg-black shadow-2xl overflow-hidden paused">
+              
+              <div id="video-controls-top" class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent z-30">
+                  <div class="flex justify-between items-center text-white">
+                      <div id="video-title" class="font-semibold text-lg">Loading...</div>
+                      <div class="flex items-center space-x-3">
+                          <button id="settings-btn" class="p-1">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <div id="video-loading" class="hidden absolute inset-0 flex items-center justify-center z-10">
+                  <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+              </div>
+
+              <video id="custom-video-player" class="z-20" playsinline></video>
+              
+              <div id="video-controls-bottom" class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent z-30">
+                  <input id="seek-bar" type="range" value="0" step="0.1" class="w-full mb-2">
+                  <div class="flex justify-between items-center text-white">
+                      <div class="flex items-center space-x-3">
+                          <button id="play-pause-btn" class="p-1">
+                              <svg id="play-icon" class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8.006v3.988a1 1 0 001.555.832l3.197-1.994a1 1 0 000-1.664l-3.197-1.994z" clip-rule="evenodd"></path></svg>
+                              <svg id="pause-icon" class="w-7 h-7 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1H7zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>
+                          </button>
+                          <button id="skip-backward-btn" class="p-1">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+                          </button>
+                          <button id="skip-forward-btn" class="p-1">
+                               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                          </button>
+                          <div class="flex items-center space-x-2 group">
+                              <button id="volume-btn" class="p-1">
+                                  <svg id="volume-high-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M20 4a9 9 0 010 12.728M11 5H7a2 2 0 00-2 2v6a2 2 0 002 2h4l5 5V0L11 5z"></path></svg>
+                                  <svg id="volume-muted-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a2 2 0 01-2-2V9a2 2 0 012-2h1.586l4.707-4.707C10.923 1.663 12 2.109 12 3v18c0 .89-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                              </button>
+                              <input id="volume-slider" type="range" min="0" max="1" step="0.05" value="1" class="w-0 opacity-0 group-hover:w-[70px] group-hover:opacity-100 transition-all duration-300">
+                          </div>
+                      </div>
+                      <div class="flex items-center space-x-3">
+                          <span id="time-display" class="text-sm font-medium">00:00 / 00:00</span>
+                          <button id="fullscreen-btn" class="p-1">
+                              <svg id="fullscreen-open-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1v4m0 0h-4m4 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5 5"></path></svg>
+                              <svg id="fullscreen-close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h6m0 0v6m0-6l-7 7M9 21H3m0 0v-6m0 6l7-7"></path></svg>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              
+              <div id="settings-panel" class="text-white">
+                  <div class="flex items-center justify-between p-3 border-b border-gray-600">
+                      <button id="settings-back-btn" class="p-1 opacity-0 pointer-events-none transition-opacity">
+                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                      </button>
+                      <h4 id="settings-panel-title" class="text-lg font-semibold">Setting</h4>
+                      <button id="settings-close-btn" class="p-1">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
+                  </div>
+                  <div class="p-2">
+                      <div id="settings-page-main" data-page="main">
+                          <button class="settings-nav-btn w-full flex justify-between items-center text-left px-3 py-3 text-sm hover:bg-white/20 rounded" data-target-page="speed">
+                              <span class="font-medium">Speed</span>
+                              <div class="flex items-center space-x-2">
+                                  <span id="speed-display" class="text-gray-400">1x (Normal)</span>
+                                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                              </div>
+                          </button>
+                          <button class="settings-nav-btn w-full flex justify-between items-center text-left px-3 py-3 text-sm hover:bg-white/20 rounded" data-target-page="quality" id="quality-nav-btn">
+                              <span class="font-medium">Quality</span>
+                               <div class="flex items-center space-x-2">
+                                  <span id="quality-display" class="text-gray-400">Auto</span>
+                                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                              </div>
+                          </button>
+                          <button class="settings-nav-btn w-full flex justify-between items-center text-left px-3 py-3 text-sm hover:bg-white/20 rounded" data-target-page="about">
+                              <span class="font-medium">About</span>
+                               <div class="flex items-center space-x-2">
+                                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                              </div>
+                          </button>
+                      </div>
+                      <div id="settings-page-speed" data-page="speed" class="hidden py-2">
+                          <button class="w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded" data-speed="0.5">0.5x</button>
+                          <button class="w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded" data-speed="1">1x (Normal)</button>
+                          <button class="w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded" data-speed="1.5">1.5x</button>
+                          <button class="w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded" data-speed="2">2x</button>
+                          <button class="w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded" data-speed="2.5">2.5x</button>
+                      </div>
+                      <div id="settings-page-quality" data-page="quality" class="hidden py-2">
+                      </div>
+                      <div id="settings-page-about" data-page="about" class="hidden p-3">
+                          <h5 class="text-lg font-semibold pb-2" id="about-title"></h5>
+                          <p class="text-sm text-gray-300">
+                              এটি এই ভিডিওর বিস্তারিত আলোচনার স্থান। বর্তমানে এখানে শুধুমাত্র ভিডিওর শিরোনাম দেখানো হচ্ছে।
+                          </p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+        
+        <div id="lecture-details-area">
+          <h2 id="lecture-title-display">Lecture Title</h2>
+          <p id="lecture-chapter-display">Chapter Name</p>
+        </div>
+        
+        <div class="player-action-buttons">
+            <button class="action-btn" onclick="alert('Added to Watchlist (Not Implemented)');">
+                <span>+</span>
+                <label>My List</label>
+            </button>
+            <button class="action-btn" onclick="alert('Download (Not Implemented)');">
+                <span>⬇️</span>
+                <label>Download</label>
+            </button>
+            <button class="action-btn" onclick="alert('View PDF (Not Implemented)');">
+                <span>📄</span>
+                <label>View PDF</label>
+            </button>
+            <button class="action-btn" id="player-share-btn">
+                <span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg></span>
+                <label>Share</label>
+            </button>
+        </div>
+
+        <div id="up-next-list-area">
+          </div>
+
+      </section>
+
+  </main>
+
+  <footer class="bottom-navbar" id="bottom-navbar">
+    <a href="#home" class="active">
+      <span class="icon">🏠</span>
+      <span class="label">Home</span>
+    </a>
+    <a href="#" class="disabled" id="myBatchBtn" onclick="return false;">
+      <span class="icon">🎓</span>
+      <span class="label">My Batch</span>
+    </a>
+    <a href="#community">
+      <span class="icon">👥</span>
+      <span class="label">Community</span>
+    </a>
+    <a href="#profile">
+      <span class="icon">👤</span>
+      <span class="label">Profile</span>
+    </a>
+  </footer>
+  
+  <div id="custom-alert" class="hidden fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded-lg shadow-md transition-all duration-300 opacity-0 z-[4000]">
+      Video link copied to clipboard!
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+    // === 1. ALL Element Variables ===
+    
+    const videoContainer = document.getElementById('video-container');
+    const video = document.getElementById('custom-video-player');
+    const videoTitle = document.getElementById('video-title');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon'); 
+    const seekBar = document.getElementById('seek-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const volumeBtn = document.getElementById('volume-btn');
+    const volumeHighIcon = document.getElementById('volume-high-icon');
+    const volumeMutedIcon = document.getElementById('volume-muted-icon');
+    const volumeSlider = document.getElementById('volume-slider');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const fullscreenOpenIcon = document.getElementById('fullscreen-open-icon');
+    const fullscreenCloseIcon = document.getElementById('fullscreen-close-icon');
+    const loadingIndicator = document.getElementById('video-loading');
+    const skipBackwardBtn = document.getElementById('skip-backward-btn');
+    const skipForwardBtn = document.getElementById('skip-forward-btn');
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    const settingsCloseBtn = document.getElementById('settings-close-btn');
+    const settingsBackBtn = document.getElementById('settings-back-btn');
+    const settingsPanelTitle = document.getElementById('settings-panel-title');
+    const settingsNavBtns = document.querySelectorAll('.settings-nav-btn');
+    const settingsPages = document.querySelectorAll('#settings-panel [data-page]');
+    const speedDisplay = document.getElementById('speed-display');
+    const qualityDisplay = document.getElementById('quality-display');
+    const qualityNavBtn = document.getElementById('quality-nav-btn');
+    const aboutTitle = document.getElementById('about-title');
+    const playbackButtons = document.querySelectorAll('#settings-page-speed button');
+    const qualityContainer = document.getElementById('settings-page-quality');
+    const videoControlsBottom = document.getElementById('video-controls-bottom');
+    const videoControlsTop = document.getElementById('video-controls-top');
+    
+    // App Nav
+    const appbar = document.getElementById('appbar');
+    const menuBtn = document.getElementById("menuBtn");
+    const backBtn = document.getElementById("backBtn");
+    const sideMenu = document.getElementById("sideMenu");
+    const overlay = document.getElementById("menuOverlay");
+    const bottomNavbar = document.getElementById('bottom-navbar');
+    
+    const lectureTitleDisplay = document.getElementById('lecture-title-display');
+    const lectureChapterDisplay = document.getElementById('lecture-chapter-display');
+    const upNextListArea = document.getElementById('up-next-list-area');
+    const playerShareBtn = document.getElementById('player-share-btn');
+    const customAlert = document.getElementById('custom-alert');
+
+    // === 2. Global State / Config ===
+    let alertTimeout;
+    let hls;
+    let currentVideoPath = ''; 
+    let currentVideoTitle = '';
+    let currentChapterTitle = '';
+    const HLS_BASE_URL = 'https://vz-538c3d8b-8e7.b-cdn.net/';
+    let controlsHidden = false; 
+    let clickTimer = null; 
+    
+    const routes = {
+      home: { title: "Home", sub: "Welcome" },
+      community: { title: "Community", sub: "Friends" },
+      chat: { title: "Chat", sub: "Messages" },
+      notifications: { title: "Notifications", sub: "Alerts" },
+      classPage: { title: "Classes", sub: "Choose your class" }, 
+      "Semesters3/4": { title: "Class 12", sub: "Sem 3 & 4" },
+      sem4: { title: "Semester 4", sub: "Choose Stream" },
+      "Physicssem4": { title: "Physics", sub: "Sem 4 Chapters" },
+      "Chemistrysem4": { title: "Chemistry", sub: "Sem 4 Chapters" },
+      "Mathsem4": { title: "Mathematics", sub: "Sem 4 Chapters" },
+      "Biologysem4": { title: "Biology", sub: "Sem 4 Chapters" },
+      "PhysicsCp1sem4": { title: "Physics Ch 1", sub: "Lectures" },
+      "PhysicsCp2sem4": { title: "Physics Ch 2", sub: "Lectures" },
+      "ChemistryCp1sem4": { title: "Chemistry Ch 1", sub: "Lectures" },
+      "ChemistryCp2sem4": { title: "Chemistry Ch 2", sub: "Lectures" },
+      "ChemistryCp3sem4": { title: "Chemistry Ch 3", sub: "Lectures" },
+      "ChemistryCp4sem4": { title: "Chemistry Ch 4", sub: "Lectures" },
+      "ChemistryCp5sem4": { title: "Chemistry Ch 5", sub: "Lectures" },
+      "ChemistryCp6sem4": { title: "Chemistry Ch 6", sub: "Lectures" },
+      lecturePlayerView: { title: "Lecture", sub: "Now Playing" },
+      settings: { title: "Settings", sub: "Preferences" },
+      profile: { title: "Profile", sub: "User" }
+    };
+
+    // === 3. ALL Function Definitions ===
+
+    function loadVideoSource(videoPath, title) {
+        const videoSrc = videoPath.startsWith('http') ? videoPath : `${HLS_BASE_URL}${videoPath}`;
+        
+        // Update globals
+        currentVideoPath = videoPath; 
+        currentVideoTitle = title;
+        videoTitle.textContent = title;
+        
+        loadingIndicator.classList.remove('hidden'); 
+        showControls();
+        controlsHidden = false; 
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.add('hidden');
+        videoContainer.classList.remove('paused');
+
+        if (hls) {
+            hls.destroy();
+            hls = null;
+        }
+
+        if (videoPath.endsWith('.mp4')) {
+            // MP4
+            console.log("Loading MP4 video...");
+            video.src = videoSrc;
+            video.addEventListener('loadedmetadata', () => {
+                loadingIndicator.classList.add('hidden'); 
+                pauseIcon.classList.remove('hidden');
+                videoContainer.classList.remove('paused'); 
+                video.play();
+            }, { once: true });
+            if(qualityNavBtn) qualityNavBtn.style.display = 'none';
+
+        } else if (Hls.isSupported()) {
+            // HLS
+            console.log("Loading HLS video...");
+            hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => { 
+                loadingIndicator.classList.add('hidden'); 
+                pauseIcon.classList.remove('hidden');
+                videoContainer.classList.remove('paused'); 
+                video.play(); 
+                if (data.levels.length > 1) {
+                    if(qualityNavBtn) qualityNavBtn.style.display = 'flex'; 
+                    populateQualityMenu(data.levels);
+                } else {
+                    if(qualityNavBtn) qualityNavBtn.style.display = 'none'; 
+                }
+            });
+            hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => { 
+                updateActiveQuality(data.level); 
+            });
+        }
+    }
+    
+    window.openLecturePlayer = function(videoPath, title, chapterId) {
+      location.hash = '#lecturePlayerView';
+      loadVideoSource(videoPath, title); 
+      
+      lectureTitleDisplay.textContent = title;
+      
+      const chapterCardLink = document.querySelector(`a[href="#${chapterId}"]`);
+      if (chapterCardLink) {
+        const cardHtml = chapterCardLink.querySelector('.card.subject-card').innerHTML;
+        currentChapterTitle = cardHtml.split('<br>')[0];
+        lectureChapterDisplay.textContent = `From: ${currentChapterTitle}`;
+      } else {
+        lectureChapterDisplay.textContent = 'Chapter details';
+      }
+
+      populateUpNextList(chapterId, videoPath);
+      window.scrollTo(0, 0);
+    }
+
+    function populateUpNextList(chapterId, currentVideoPath) {
+      upNextListArea.innerHTML = '<h3>Up Next</h3>';
+      const chapterSection = document.getElementById(chapterId);
+      if (!chapterSection) return;
+
+      const lectureLinks = chapterSection.querySelectorAll('a.unit-link');
+      
+      lectureLinks.forEach(link => {
+        const onclickAttr = link.getAttribute('onclick');
+        const matches = onclickAttr.match(/openLecturePlayer\('([^']*)', '([^']*)', '([^']*)'\)/);
+        if (!matches) return;
+
+        const path = matches[1];
+        const titleText = matches[2];
+        const isPlaying = (path === currentVideoPath);
+
+        const cardInnerHtml = link.querySelector('.card.subject-card').innerHTML;
+
+        const cardLink = document.createElement('a');
+        cardLink.href = '#';
+        cardLink.className = 'unit-link';
+        cardLink.style.textDecoration = 'none';
+        cardLink.style.color = 'inherit';
+        
+        cardLink.innerHTML = `
+          <div class="card subject-card ${isPlaying ? 'now-playing-card' : ''}">
+            ${cardInnerHtml}
+          </div>
+        `;
+        
+        cardLink.onclick = (e) => {
+          e.preventDefault();
+          if (!isPlaying) {
+            openLecturePlayer(path, titleText, chapterId);
+          }
+        };
+        upNextListArea.appendChild(cardLink);
+      });
+    }
+
+    function closePlayer() {
+        if (hls) {
+          hls.destroy();
+        }
+        video.pause();
+        video.src = '';
+        if (location.hash === '#lecturePlayerView') {
+          window.history.back();
+        }
+    }
+    
+    function togglePlay() { 
+        if (video.paused || video.ended) video.play();
+        else video.pause(); 
+    }
+
+    function formatTime(seconds) { const min = Math.floor(seconds / 60); const sec = Math.floor(seconds % 60); return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; }
+
+    function navigateToSettingsPage(pageName) {
+        settingsPages.forEach(page => page.classList.add('hidden'));
+        const targetPage = document.getElementById(`settings-page-${pageName}`);
+        if (targetPage) targetPage.classList.remove('hidden');
+        
+        if (pageName === 'main') {
+            settingsPanelTitle.textContent = 'Setting';
+            settingsBackBtn.classList.add('opacity-0', 'pointer-events-none');
+        } else {
+            const title = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+            settingsPanelTitle.textContent = title;
+            settingsBackBtn.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        if (pageName === 'about') {
+            aboutTitle.textContent = videoTitle.textContent;
+        }
+    }
+    
+    function populateQualityMenu(levels) {
+        qualityContainer.innerHTML = ''; 
+        qualityDisplay.textContent = 'Auto'; 
+        const autoBtn = document.createElement('button');
+        autoBtn.className = 'w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded font-bold text-blue-400'; 
+        autoBtn.dataset.level = -1;
+        autoBtn.textContent = 'Auto';
+        autoBtn.addEventListener('click', () => { 
+            hls.currentLevel = -1; 
+            qualityDisplay.textContent = 'Auto';
+            navigateToSettingsPage('main'); 
+        });
+        qualityContainer.appendChild(autoBtn);
+        levels.forEach((level, index) => {
+            const levelBtn = document.createElement('button');
+            levelBtn.className = 'w-full text-left px-3 py-2 text-sm hover:bg-white/20 rounded';
+            levelBtn.textContent = `${level.height}p`;
+            levelBtn.dataset.level = index;
+            levelBtn.addEventListener('click', () => { 
+                hls.currentLevel = index; 
+                navigateToSettingsPage('main'); 
+            });
+            qualityContainer.appendChild(levelBtn);
+        });
+    }
+
+    function updateActiveQuality(levelIndex) {
+        let activeText = 'Auto';
+        document.querySelectorAll('#settings-page-quality button').forEach(button => {
+            const buttonLevel = parseInt(button.dataset.level);
+            if (buttonLevel === levelIndex) {
+                button.classList.add('font-bold', 'text-blue-400');
+                activeText = button.textContent;
+            } else {
+                button.classList.remove('font-bold', 'text-blue-400');
+            }
+        });
+        if (levelIndex === -1) {
+            const autoBtn = qualityContainer.querySelector('button[data-level="-1"]');
+            if (autoBtn) autoBtn.classList.add('font-bold', 'text-blue-400');
+            activeText = 'Auto';
+        }
+        qualityDisplay.textContent = activeText;
+    }
+    
+    function showCustomAlert(message) {
+        if (alertTimeout) clearTimeout(alertTimeout);
+        customAlert.textContent = message;
+        customAlert.classList.remove('hidden');
+        setTimeout(() => { customAlert.classList.remove('opacity-0'); }, 10);
+        alertTimeout = setTimeout(() => {
+            customAlert.classList.add('opacity-0');
+            setTimeout(() => customAlert.classList.add('hidden'), 300); 
+        }, 3000); 
+    }
+    
+    function hideControls() {
+        videoControlsBottom.classList.add('opacity-0', 'pointer-events-none');
+        videoControlsTop.classList.add('opacity-0', 'pointer-events-none');
+        videoContainer.classList.add('controls-hidden'); 
+        controlsHidden = true;
+    }
+
+    function showControls() {
+        videoControlsBottom.classList.remove('opacity-0', 'pointer-events-none');
+        videoControlsTop.classList.remove('opacity-0', 'pointer-events-none');
+        videoContainer.classList.remove('controls-hidden'); 
+        controlsHidden = false;
+    }
+    
+    // === NEW: Share & Token Logic ===
+
+    async function shareCurrentVideo() {
+        if (!currentVideoPath) {
+            showCustomAlert('No video is currently playing!');
+            return;
+        }
+        // ১. টোকেন তৈরি
+        const dummyToken = 'tok_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        
+        // ২. লিঙ্ক তৈরি
+        const baseUrl = window.location.href.split('#')[0];
+        const shareableUrl = `${baseUrl}#playvideo?path=${encodeURIComponent(currentVideoPath)}&title=${encodeURIComponent(currentVideoTitle)}&token=${dummyToken}`;
+        
+        try {
+            await navigator.share({ 
+                title: currentVideoTitle, 
+                text: 'Watch this video specifically shared for you.', 
+                url: shareableUrl 
+            });
+        } catch (err) { 
+            try {
+                await navigator.clipboard.writeText(shareableUrl);
+                showCustomAlert('Video link copied to clipboard!');
+            } catch (copyErr) {
+                showCustomAlert('Failed to copy link.');
+            }
+        }
+    }
+
+    function handleSharedLink() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#playvideo')) {
+            // 'shared-mode' ক্লাস যুক্ত করা হচ্ছে যা CSS এ বাকি সব লুকিয়ে দেবে
+            document.body.classList.add('shared-mode');
+            try {
+                const queryString = hash.split('?')[1];
+                const urlParams = new URLSearchParams(queryString);
+                const path = decodeURIComponent(urlParams.get('path'));
+                const title = decodeURIComponent(urlParams.get('title') || 'Shared Video');
+                
+                if (path) {
+                    document.getElementById('lecturePlayerView').classList.add('active');
+                    document.body.classList.add('player-view-active');
+                    
+                    document.getElementById('lecture-title-display').textContent = title;
+                    document.getElementById('lecture-chapter-display').textContent = "Shared Content";
+                    
+                    loadVideoSource(path, title);
+                    
+                    // Hide Up Next in shared mode
+                    document.getElementById('up-next-list-area').innerHTML = '<p style="padding:10px; text-align:center; color:var(--muted)">Shared via direct link</p>';
+                }
+            } catch (e) {
+                console.error("Error parsing shared link", e);
+                showCustomAlert("Invalid Video Link");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // === App Nav Functions ===
+    function showRoute(hash){
+      const id = (hash||"#home").replace("#","");
+      
+      if (id === 'lecturePlayerView') {
+        document.body.classList.add('player-view-active');
+        appbar.classList.add('appbar-in-player-view');
+        document.getElementById("brandTitle").textContent = routes[id]?.title || "Lecture";
+        document.getElementById("brandSub").textContent = routes[id]?.sub || "Now Playing";
+      } else {
+        document.body.classList.remove('player-view-active');
+        appbar.classList.remove('appbar-in-player-view');
+        document.getElementById("brandTitle").textContent = routes[id]?.title || "CG Study Center";
+        document.getElementById("brandSub").textContent = routes[id]?.sub || "All-in-one single file";
+      }
+
+      if (id !== 'lecturePlayerView' && document.body.classList.contains('player-view-active')) {
+          if (hls) hls.destroy();
+          video.pause();
+      }
+      
+      document.querySelectorAll("section.view").forEach(v=>v.classList.remove("active"));
+      const el=document.getElementById(id);
+      if(el) el.classList.add("active");
+      else document.getElementById('home').classList.add('active');
+      
+      const footerLinks = document.querySelectorAll('.bottom-navbar a');
+      footerLinks.forEach(link => link.classList.remove('active'));
+      
+      let activeFooterLink;
+      if (id === 'home') activeFooterLink = document.querySelector('.bottom-navbar a[href="#home"]');
+      else if (id === 'community') activeFooterLink = document.querySelector('.bottom-navbar a[href="#community"]');
+      else if (id === 'profile') activeFooterLink = document.querySelector('.bottom-navbar a[href="#profile"]');
+      else if (id.includes('class') || id.includes('sem') || id.includes('sub') || id.includes('Cp')) {
+        activeFooterLink = document.getElementById('myBatchBtn');
+      }
+      if (activeFooterLink) activeFooterLink.classList.add('active');
+    }
+
+    window.showSubjects = function(category, btn) {
+      document.getElementById("science-subjects").style.display = "none";
+      document.getElementById("arts-subjects").style.display = "none";
+      document.getElementById("commerce-subjects").style.display = "none";
+      document.getElementById(category + "-subjects").style.display = "grid";
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    // === 4. ALL Event Listeners ===
+    
+    backBtn.addEventListener('click', closePlayer);
+    playPauseBtn.addEventListener('click', togglePlay);
+    
+    video.addEventListener('click', () => {
+        if (clickTimer === null) {
+            clickTimer = setTimeout(() => {
+                if (!settingsPanel.classList.contains('active')) { 
+                    controlsHidden ? showControls() : hideControls();
+                }
+                clickTimer = null;
+            }, 250); 
+        } else {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            togglePlay();
+            if (controlsHidden) showControls();
+        }
+    });
+
+    video.addEventListener('play', () => { 
+        pauseIcon.classList.remove('hidden'); playIcon.classList.add('hidden'); 
+        videoContainer.classList.remove('paused'); loadingIndicator.classList.add('hidden'); 
+    });
+    video.addEventListener('pause', () => { 
+        pauseIcon.classList.add('hidden'); playIcon.classList.remove('hidden'); 
+        videoContainer.classList.add('paused'); 
+    });
+
+    video.addEventListener('waiting', () => loadingIndicator.classList.remove('hidden'));
+    video.addEventListener('playing', () => loadingIndicator.classList.add('hidden'));
+    
+    video.addEventListener('timeupdate', () => {
+        const duration = video.duration || 0;
+        if (!isFinite(duration)) return; 
+        seekBar.value = video.currentTime;
+        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(duration)}`;
+        const progress = (video.currentTime / duration) * 100;
+        seekBar.style.setProperty('--seek-progress', `${progress}%`);
+        if (video.buffered.length > 0) {
+            const bufferEnd = video.buffered.end(video.buffered.length - 1);
+            const bufferProgress = (bufferEnd / duration) * 100;
+            seekBar.style.setProperty('--buffer-progress', `${bufferProgress}%`);
+        }
+    });
+    video.addEventListener('loadedmetadata', () => { 
+        const duration = video.duration; 
+        if (isFinite(duration)) {
+            seekBar.max = duration; 
+            timeDisplay.textContent = `00:00 / ${formatTime(duration)}`;
+        }
+    });
+    seekBar.addEventListener('change', () => video.currentTime = seekBar.value);
+
+    volumeBtn.addEventListener('click', () => { video.muted = !video.muted; });
+    video.addEventListener('volumechange', () => {
+        volumeSlider.value = video.volume;
+        if (video.muted || video.volume === 0) { 
+            volumeHighIcon.classList.add('hidden'); volumeMutedIcon.classList.remove('hidden'); 
+        }
+        else { 
+            volumeHighIcon.classList.remove('hidden'); volumeMutedIcon.classList.add('hidden'); 
+        }
+    });
+    volumeSlider.addEventListener('input', () => { 
+        video.volume = volumeSlider.value; 
+        video.muted = video.volume === 0;
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+         if (!document.fullscreenElement) {
+            if (videoContainer.requestFullscreen) videoContainer.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    });
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            fullscreenOpenIcon.classList.add('hidden'); fullscreenCloseIcon.classList.remove('hidden');
+        } else {
+            fullscreenOpenIcon.classList.remove('hidden'); fullscreenCloseIcon.classList.add('hidden');
+        }
+    });
+
+    skipBackwardBtn.addEventListener('click', () => video.currentTime -= 10);
+    skipForwardBtn.addEventListener('click', () => video.currentTime += 10);
+
+    settingsBtn.addEventListener('click', () => {
+        settingsPanel.classList.add('active');
+        videoContainer.classList.add('settings-panel-open');
+        hideControls(); 
+        navigateToSettingsPage('main');
+    });
+    settingsCloseBtn.addEventListener('click', () => {
+        settingsPanel.classList.remove('active');
+        videoContainer.classList.remove('settings-panel-open');
+        showControls(); 
+    });
+    settingsBackBtn.addEventListener('click', () => { navigateToSettingsPage('main'); });
+    
+    settingsNavBtns.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetPage = button.dataset.targetPage;
+            navigateToSettingsPage(targetPage);
+        });
+    });
+
+    playbackButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const speed = parseFloat(button.dataset.speed);
+            video.playbackRate = speed;
+            speedDisplay.textContent = button.textContent;
+            playbackButtons.forEach(btn => btn.classList.remove('font-bold', 'text-blue-400'));
+            button.classList.add('font-bold', 'text-blue-400');
+            navigateToSettingsPage('main');
+        });
+    });
+    video.addEventListener('loadstart', () => {
+        playbackButtons.forEach(btn => {
+            if (btn.dataset.speed === '1') {
+                btn.classList.add('font-bold', 'text-blue-400');
+                speedDisplay.textContent = btn.textContent;
+            }
+            else btn.classList.remove('font-bold', 'text-blue-400');
+        });
+    });
+
+    playerShareBtn.addEventListener('click', shareCurrentVideo);
+    
+    // App Nav Listeners
+    menuBtn.onclick = () => { sideMenu.classList.add("open"); overlay.classList.add("show"); };
+    overlay.onclick = () => { sideMenu.classList.remove("open"); overlay.classList.remove("show"); };
+    sideMenu.querySelectorAll("a").forEach(a => { a.onclick = () => { sideMenu.classList.remove("open"); overlay.classList.remove("show"); }; });
+    
+    window.addEventListener('hashchange', () => {
+        if (handleSharedLink()) {
+            return;
+        }
+        showRoute(location.hash); 
+    });
+
+    // === 5. Initial Calls ===
+    if (!handleSharedLink()) {
+        showRoute(location.hash || "#home"); 
+    }
+
+});
+</script>
+</body>
+</html>
